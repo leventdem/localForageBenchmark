@@ -1,4 +1,32 @@
 # localForageBenchmark
 
-Just a benchmark of localforage, with encryption and by comparing the performance drawbacks of using two separate instances for an application 
-data (data and meta) instead a single instance with all (data and meta) 
+## Usecase
+
+We want to store in a key-value database an application data and the associated metadata. 
+Our constraints are : 
+- storing two objects : one for contenet and one for metadata
+- both objects must be encrypted separately
+
+## Two solutions 
+
+### One instance 
+
+The first solution is to have only one instance (DB) with a single object composed of two properties for a specific key.
+```language-json
+   key1 : {
+          value : { username : 'bob' },
+          meta  : { lastModfication : t1 }
+          }
+```
+
+### Two instances 
+
+The second solution is to have two instance (DB) with a single object each one.
+First instance with data content :
+```language-json
+   key1 : { username : 'bob' }
+```
+Second instance with metadata:
+```language-json
+   key1 : { lastModfication : t1 }
+```
