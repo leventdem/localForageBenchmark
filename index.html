@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link href="src/index.css" type="text/css" rel="stylesheet" />
+
+    <title>Localforage bench ---</title>
+
+</head>
+
+<body>
+    <div class="container content" id="main-content">
+        <article>
+            <h1>Localforage benchmark</h1>
+
+            <h2>Test cases : </h2>
+            <ul>
+                <li>One instance : <br> The (given) key cointains a single object of two properties :
+                    <ul>
+                        <li>
+                            value : { the received data }
+                        </li>
+                        <li> meta : { lastModification : timeStamp }</li>
+                    </ul>
+                </li>
+                <li>Two instances :
+                    <ul>
+                        1st instance :
+                        <li>
+                            value : { the received data }
+                        </li>
+                        2nd instance :
+                        <li> meta : { lastModification : timeStamp }</li>
+                    </ul>
+                </li>
+
+                <table>
+
+                    <tr>
+                        <th> <button class="button" type="button" id="loadData">Load test file</button></th>
+                    </tr>
+                    <tr>
+                        <th> <button class="button" type="button" id="runSingleStoreTest">Run singleStore test</button></th>
+                    </tr>
+                    <tr>
+                        <th> <button class="button" type="button" id="deleteSingleStore">Delete singleStore</button></th>
+                    </tr>
+                    <tr>
+                        <th> <button class="button" type="button" id="runDoubleStoreTest">Run doubleStore test</button></th>
+                    </tr>
+                    <tr>
+                        <th> <button class="button" type="button" id="deleteDoubleStore">Delete doubleStore</button></th>
+                    </tr>
+                </table>
+                <h2>Results</h2>
+                <ul>
+                    <li>
+                        <div id="oneInstanceResults"></div>
+                    </li>
+                    <li>
+                        <div id="twoInstancesResults"></div>
+                    </li>
+                </ul>
+
+        </article>
+    </div>
+    <script src="dist/bundle.js"></script>
+</body>
+
+</html>

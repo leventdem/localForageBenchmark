@@ -1,0 +1,27 @@
+{
+  "name": "localForageBenchmark",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "genTestFile": "node res/generateTestFile.js ",
+    "browserify": "browserify ./dist/index.js --standalone bench > dist/bundle.js",
+    "build": "babel src --presets env --out-dir dist/",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "npm run build && npm run browserify && http-server -p 8182 ."
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "fetch": "^1.1.0",
+    "fs": "0.0.1-security",
+    "http-server": "^0.11.1",
+    "localforage": "^1.7.2"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "browserify": "^16.2.2",
+    "babel-plugin-transform-runtime": "^6.23.0"
+  }
+}
