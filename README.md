@@ -4,7 +4,7 @@
 
 We want to store in a key-value database an application data and the associated metadata. 
 Our constraints are : 
-- storing two objects : one for contenet and one for metadata
+- storing two objects : one for content and one for metadata
 - both objects must be encrypted separately
 
 ## Two solutions 
@@ -21,7 +21,8 @@ The first solution is to have only one instance (DB) with a single object compos
 
 ### Two instances 
 
-The second solution is to have two instance (DB) with a single object each one.
+The second solution is to have two instances (DB).
+
 First instance with data content :
 ```language-json
    key1 : { username : 'bob' }
