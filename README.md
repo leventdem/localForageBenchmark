@@ -2,7 +2,7 @@
 
 ## Usecase
 
-We want to store in a key-value database an application data and the associated metadata. 
+We want to store, in a key-value database, an application data and the associated metadata. 
 Our constraints are : 
 - storing two objects : one for content and one for metadata
 - both objects must be encrypted separately
