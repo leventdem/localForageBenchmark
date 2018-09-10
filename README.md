@@ -34,5 +34,5 @@ Second instance with metadata:
 ## Run test
 ```language-javascript
    npm i
-   npm run start
+   npm  start
 ```
