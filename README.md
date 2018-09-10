@@ -31,3 +31,8 @@ Second instance with metadata:
 ```language-json
    key1 : { lastModfication : t1 }
 ```
+## Run test
+```language-javascript
+   npm i
+   npm run start
+```
