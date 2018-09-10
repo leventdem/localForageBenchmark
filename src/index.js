@@ -1,9 +1,19 @@
 import localforage from 'localforage'
 
+/**
+ @typedef testConfiguration
+ @type {Object}
+ @property {Promise} test - The test function (must take the testFile as input)
+ @property {int} iteration - The # of test execution
+ @property {string} resultId - The div id of the results
+ @property {string} description - A simple test description
+ */
+
 let singleStore
 let app1
 let app1meta
 let testFile = null
+let testFileLoaded = false
 
 singleStore = localforage.createInstance({
   name: 'singleStore'
@@ -17,22 +27,23 @@ app1meta = localforage.createInstance({
 
 document.addEventListener('DOMContentLoaded', function() {
   var el = null
-  el = document.getElementById('runSingleStoreTest')
+  el = document.getElementById('runWriteTest')
   if (el) {
     el.addEventListener('click', function(e) {
-      runSingleStoreTest()
+      runWriteTest()
     })
   }
-  el = document.getElementById('deleteSingleStore')
+  el = document.getElementById('deleteStores')
   if (el) {
     el.addEventListener('click', function(e) {
       deleteSingleStore()
+        .then(() => deleteDoubleStore())
     })
   }
-  el = document.getElementById('runDoubleStoreTest')
+  el = document.getElementById('runReadTest')
   if (el) {
     el.addEventListener('click', function(e) {
-      runDoubleStoreTest()
+      runReadTest()
     })
   }
   el = document.getElementById('deleteDoubleStore')
@@ -54,39 +65,75 @@ const loadData = () => {
     .then((response) => response.json())
     .then(data => {
       testFile = data
+      testFileLoaded = true
       console.log('File loaded')
     })
     .catch((err) => console.log(err))
 }
 
-async function runSingleStoreTest() {
-  console.log('start...')
-  const iterations = 5
-  const results = []
-  let el = document.getElementById('oneInstanceResults')
-  let t0, t1
-  for (let index = 0; index < iterations; index++) {
-    t0 = performance.now()
-    try {
-      console.log('index', index)
-      await fillSingleStorage(testFile)
-      t1 = performance.now()
-      console.log('Call to singleStore took ' + (t1 - t0) + ' milliseconds.')
-      results.push(parseInt(t1) - parseInt(t0))
-      await deleteSingleStore()
-      console.log('delete store')
-      el.innerHTML = results.toString()
-    } catch (error) {
-      console.log(error)
-    }
+async function runReadTest() {
+
+}
+
+async function runWriteTest() {
+  const testConf = {
+    test: fillSingleStorage,
+    resultId: 'oneInstanceResults',
+    iteration: 2,
+    description: 'one instance write test '
   }
-  let acc = 0
-  results.forEach(time => {
-    acc = time + acc
+
+  const testConf2 = {
+    test: fillDoubleStorage,
+    resultId: 'twoInstancesResults',
+    iteration: 2,
+    description: 'Two instances write test '
+  }
+  const res = await runTest(testConf)
+  console.log('fin', res)
+  const res2 = await runTest(testConf2)
+  console.log('fin2', res2)
+
+
+}
+
+/**
+ * Run a single test, and return the mean excution time.
+ * @param {testConfiguration} conf - The test confuguration
+ * @returns {int} - The mean execution time of the test
+ */
+async function runTest(conf) {
+  return new Promise(async(resolve, reject) => {
+    console.log(`start...${conf.description}`)
+    if (!testFileLoaded) {
+      console.log('Please load the test file before running the test ')
+    }
+    const results = []
+    let el = document.getElementById(conf.resultId)
+    let t0, t1
+    for (let index = 0; index < conf.iteration; index++) {
+      t0 = performance.now()
+      try {
+        console.log('index', index)
+        await conf.test(testFile)
+        t1 = performance.now()
+        console.log('Call took ' + (t1 - t0) + ' milliseconds.')
+        results.push(parseInt(t1) - parseInt(t0))
+        await deleteSingleStore()
+        console.log('delete store')
+        el.innerHTML = results.toString()
+      } catch (error) {
+        console.log(error)
+      }
+    }
+    let acc = 0
+    results.forEach(time => {
+      acc = time + acc
+    })
+    let mean = acc / conf.iteration
+    el.innerHTML = `${conf.description} : for ${conf.iteration} iterations, the mean time is : ${mean}ms`
+    resolve(mean)
   })
-  let mean = acc / iterations
-  el.innerHTML = `One instance test : for ${iterations} iterations, the mean time is : ${mean}ms`
-  runDoubleStoreTest()
 }
 
 const fillSingleStorage = (data) => {
@@ -99,35 +146,6 @@ const fillSingleStorage = (data) => {
 
 const deleteSingleStore = () => {
   return singleStore.clear()
-}
-
-async function runDoubleStoreTest() {
-  console.log('Run double instances test')
-  console.log('start...')
-  const iterations = 5
-  const results = []
-  let el = document.getElementById('twoInstancesResults')
-  let t0, t1
-  for (let index = 0; index < iterations; index++) {
-    try {
-      t0 = performance.now()
-      await fillDoubleStorage(testFile)
-      t1 = performance.now()
-      console.log('Call to doubleStorage took ' + (t1 - t0) + ' milliseconds.')
-      results.push(parseInt(t1) - parseInt(t0))
-      await deleteDoubleStore()
-      console.log('delete stores')
-      el.innerHTML = results.toString()
-    } catch (error) {
-      console.log(error)
-    }
-  }
-  let acc = 0
-  results.forEach(time => {
-    acc = time + acc
-  })
-  let mean = acc / iterations
-  el.innerHTML = `Two instances test : for ${iterations} iterations, the mean time is : ${mean}ms`
 }
 
 const fillDoubleStorage = (data) => {
