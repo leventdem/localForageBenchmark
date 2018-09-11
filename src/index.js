@@ -1,4 +1,5 @@
 import localforage from 'localforage'
+import MasqCrypto from 'masq-crypto'
 
 /**
  @typedef testConfiguration
@@ -16,7 +17,12 @@ let app1meta
 let testFile = null
 let testFileLoaded = false
 let nbOfKeys = 0
-
+const AESKey = Uint8Array.from([126, 252, 235, 252, 60, 233, 252, 81, 130, 147, 61, 241, 179, 85, 95, 23])
+const cipherAES = new MasqCrypto.AES({
+  mode: MasqCrypto.aesModes.GCM,
+  key: AESKey,
+  keySize: 128
+})
 singleStore = localforage.createInstance({
   name: 'singleStore'
 })
@@ -37,9 +43,21 @@ document.addEventListener('DOMContentLoaded', () => {
   if (el) {
     el.addEventListener('click', e => runReadTest())
   }
+  el = document.getElementById('runWriteTestWithEnc')
+  if (el) {
+    el.addEventListener('click', e => runWriteTest(true))
+  }
+  el = document.getElementById('runReadTestWithEnc')
+  if (el) {
+    el.addEventListener('click', e => runReadTest(true))
+  }
   el = document.getElementById('loadData')
   if (el) {
     el.addEventListener('click', e => loadData())
+  }
+  el = document.getElementById('runAllTests')
+  if (el) {
+    el.addEventListener('click', e => runAllTests())
   }
 })
 
@@ -55,14 +73,23 @@ const loadData = () => {
     .catch((err) => console.log(err))
 }
 
-async function runReadTest() {
+const runAllTests = async() => {
+  await runWriteTest(false)
+  await runReadTest(false)
+  await runWriteTest(true)
+  await runReadTest(true)
+}
+
+async function runReadTest(encryption) {
   const testConf = {
     test: readSingleStore,
-    resultId: 'oneInstanceResultsRead',
+    resultId: `oneInstanceResultsRead${encryption ? 'WithEnc' : ''}`,
     iteration: 2,
-    description: 'one instance read test'
+    description: `one instance read test ${encryption ? 'WithEnc' : ''}`,
+    encryption: encryption || false
   }
-  const timeStamps = await runTest(testConf)
+  let testResult = await runTest(testConf)
+  let timeStamps = testResult.res
   if (timeStamps.length !== nbOfKeys) {
     console.log(`Error : read keys # is ${timeStamps.length} instead of ${nbOfKeys}`)
   } else {
@@ -70,55 +97,81 @@ async function runReadTest() {
   }
   const testConf2 = {
     test: readDoubleStore,
-    resultId: 'twoInstancesResultsRead',
+    resultId: `twoInstancesResultsRead${encryption ? 'WithEnc' : ''}`,
     iteration: 2,
-    description: 'two instances read test'
+    description: `two instances read test ${encryption ? 'WithEnc' : ''}`,
+    encryption: encryption || false
   }
-  const timeStamps2 = await runTest(testConf2)
-  if (timeStamps2.length !== nbOfKeys) {
-    console.log(`Error : read keys # is ${timeStamps2.length} instead of ${nbOfKeys}`)
+  testResult = await runTest(testConf2)
+  timeStamps = testResult.res
+  if (timeStamps.length !== nbOfKeys) {
+    console.log(`Error : read keys # is ${timeStamps.length} instead of ${nbOfKeys}`)
   } else {
-    console.log('# of keys : ', timeStamps2.length)
+    console.log('# of keys : ', timeStamps.length)
   }
 }
 
-async function readSingleStore() {
-  await writeSingleStore(testFile)
+const readSingleStore = async encryption => {
   let res = []
+  let dec = []
   await singleStore.iterate((value, key, it) => {
-    res.push({
-      [key]: value.meta.lastModification
+      res.push({
+        [key]: encryption ? value : value.meta.lastModification
+      })
     })
-  })
-  return res
+    /**
+     * res contains : [
+     * {a:{ciphertext:"efef",iv:"",additionalData:""}},
+     * {b:{ciphertext:"efef",iv:"",additionalData:""}},
+     * ]
+     */
+
+  if (encryption) {
+    await Promise.all(res.map(async(el) => {
+      let val = JSON.parse(await cipherAES.decrypt(Object.values(el)[0]))
+      dec.push(val.meta.lastModification)
+    }))
+  }
+  return encryption ? dec : res
 }
 
-async function readDoubleStore() {
-  await writeDoubleStore(testFile)
+const readDoubleStore = async encryption => {
+  // await writeDoubleStore(encryption || false)
   let res = []
+  let dec = []
   await app1meta.iterate((value, key, it) => {
     res.push({
-      [key]: value.lastModification
+      [key]: encryption ? value : value.lastModification
     })
   })
-  return res
+  if (encryption) {
+    await Promise.all(res.map(async(el) => {
+      let val = JSON.parse(await cipherAES.decrypt(Object.values(el)[0]))
+      dec.push(val.lastModification)
+    }))
+  }
+  return encryption ? dec : res
 }
 
-async function runWriteTest() {
+const runWriteTest = async encryption => {
+  await deleteSingleStore()
+  await deleteDoubleStore()
   const testConf = {
     test: writeSingleStore,
-    resultId: 'oneInstanceResults',
+    resultId: `oneInstanceResultsWrite${encryption ? 'WithEnc' : ''}`,
     iteration: 2,
-    description: 'one instance write test',
-    delete: deleteSingleStore
+    description: `one instance write test ${encryption ? 'WithEnc' : ''}`,
+    delete: deleteSingleStore,
+    encryption: encryption || false
   }
 
   const testConf2 = {
     test: writeDoubleStore,
-    resultId: 'twoInstancesResults',
+    resultId: `twoInstancesResultsWrite${encryption ? 'WithEnc' : ''}`,
     iteration: 2,
-    description: 'Two instances write test ',
-    delete: deleteDoubleStore
+    description: `Two instances write test ${encryption ? 'WithEnc' : ''}`,
+    delete: deleteDoubleStore,
+    encryption: encryption || false
   }
 
   await runTest(testConf)
@@ -144,6 +197,7 @@ async function runWriteTest() {
  */
 async function runTest(conf) {
   return new Promise(async(resolve, reject) => {
+    let res = {}
     console.log(`start...${conf.description}`)
     if (!testFileLoaded) {
       console.log('Please load the test file before running the test ')
@@ -156,7 +210,7 @@ async function runTest(conf) {
       t0 = performance.now()
       try {
         console.log('index', index)
-        await conf.test(testFile)
+        res.res = await conf.test(conf.encryption || false)
         t1 = performance.now()
         console.log('Call took ' + (t1 - t0) + ' milliseconds.')
         results.push(parseInt(t1) - parseInt(t0))
@@ -174,15 +228,16 @@ async function runTest(conf) {
       acc = time + acc
     })
     let mean = acc / conf.iteration
+    res.meanTIme = mean
     el.innerHTML = `${conf.description} : for ${conf.iteration} iterations, the mean time is : ${mean}ms`
-    resolve(mean)
+    resolve(res)
   })
 }
 
-const writeSingleStore = (data) => {
+const writeSingleStore = async encryption => {
   const promiseArr = []
-  for (let key of Object.keys(data)) {
-    promiseArr.push(singleStore.setItem(key, data[key]))
+  for (let key of Object.keys(testFile)) {
+    promiseArr.push(singleStore.setItem(key, encryption ? await cipherAES.encrypt(JSON.stringify(testFile[key])) : testFile[key]))
   }
   return Promise.all(promiseArr)
 }
@@ -191,11 +246,11 @@ const deleteSingleStore = () => {
   return singleStore.clear()
 }
 
-const writeDoubleStore = (data) => {
+const writeDoubleStore = async encryption => {
   const promiseArr = []
-  for (let key of Object.keys(data)) {
-    promiseArr.push(app1.setItem(key, data[key].value))
-    promiseArr.push(app1meta.setItem(key, data[key].meta))
+  for (let key of Object.keys(testFile)) {
+    promiseArr.push(app1.setItem(key, encryption ? await cipherAES.encrypt(JSON.stringify(testFile[key].value)) : testFile[key].value))
+    promiseArr.push(app1meta.setItem(key, encryption ? await cipherAES.encrypt(JSON.stringify(testFile[key].meta)) : testFile[key].meta))
   }
   return Promise.all(promiseArr)
 }

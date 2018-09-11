@@ -34,6 +34,7 @@
                     </ul>
                 </li>
                 <p>Note : do not forget to load the test file first !</p>
+                <p>Note : After each write test, you can check the storage !</p>
 
                 <table>
 
@@ -42,22 +43,25 @@
                     </tr>
                     <tr>
                         <th> <button class="button" type="button" id="runWriteTest">Run write tests</button></th>
-                    </tr>
-                    <tr>
                         <th> <button class="button" type="button" id="runReadTest">Run read tests</button></th>
                     </tr>
                     <tr>
-                        <th> <button class="button" type="button" id="runReadTestWithEnc">Run read tests with encryption</button></th>
+                        <th> <button class="button" type="button" id="runWriteTestWithEnc">Run write tests (with enc.)</button></th>
+                        <th> <button class="button" type="button" id="runReadTestWithEnc">Run read tests (with dec.)</button></th>
+
+                    </tr>
+                    <tr>
+                        <th> <button class="button" type="button" id="runAllTests">Run all tests</button></th>
                     </tr>
                 </table>
                 <h2>Results</h2>
                 <ul>
                     Write
                     <li>
-                        <div id="oneInstanceResults"></div>
+                        <div id="oneInstanceResultsWrite"></div>
                     </li>
                     <li>
-                        <div id="twoInstancesResults"></div>
+                        <div id="twoInstancesResultsWrite"></div>
                     </li>
                 </ul>
                 <ul>
@@ -67,6 +71,24 @@
                     </li>
                     <li>
                         <div id="twoInstancesResultsRead"></div>
+                    </li>
+                </ul>
+                <ul>
+                    Write (with enc)
+                    <li>
+                        <div id="oneInstanceResultsWriteWithEnc"></div>
+                    </li>
+                    <li>
+                        <div id="twoInstancesResultsWriteWithEnc"></div>
+                    </li>
+                </ul>
+                <ul>
+                    Read (with dec)
+                    <li>
+                        <div id="oneInstanceResultsReadWithEnc"></div>
+                    </li>
+                    <li>
+                        <div id="twoInstancesResultsReadWithEnc"></div>
                     </li>
                 </ul>
 
