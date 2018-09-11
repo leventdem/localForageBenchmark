@@ -79,14 +79,25 @@ async function runReadTest() {
     iteration: 2,
     description: 'one instance read test'
   }
-  await runTest(testConf)
+  const timeStamps = await runTest(testConf)
+  if (timeStamps.length !== 18083) {
+    console.log('Error on READ, the number of element is != 18083')
+  } else {
+    console.log('# of keys : ', timeStamps.length)
+  }
   const testConf2 = {
     test: readDoubleStore,
     resultId: 'twoInstancesResultsRead',
     iteration: 2,
     description: 'two instances read test'
   }
-  await runTest(testConf2)
+  const timeStamps2 = await runTest(testConf2)
+  if (timeStamps2.length !== 18083) {
+    console.log('Error on READ, the number of element is != 18083')
+  } else {
+    console.log('# of keys : ', timeStamps2.length)
+  }
+
 }
 
 async function readSingleStore() {
@@ -97,11 +108,7 @@ async function readSingleStore() {
       [key]: value.meta.lastModification
     })
   })
-  if (res.length !== 18083) {
-    console.log('Error on READ, the number of element is != 18083')
-  } else {
-    console.log('# of keys : ', res.length)
-  }
+  return res
 }
 
 async function readDoubleStore() {
@@ -112,7 +119,7 @@ async function readDoubleStore() {
       [key]: value.lastModification
     })
   })
-  console.log('# of keys : ', res.length)
+  return res
 }
 
 async function runWriteTest() {
