@@ -4,6 +4,7 @@ import localforage from 'localforage'
  @typedef testConfiguration
  @type {Object}
  @property {Promise} test - The test function (must take the testFile as input)
+ @property {Promise} delete - The deletion function
  @property {int} iteration - The # of test execution
  @property {string} resultId - The div id of the results
  @property {string} description - A simple test description
@@ -72,29 +73,66 @@ const loadData = () => {
 }
 
 async function runReadTest() {
+  const testConf = {
+    test: readSingleStore,
+    resultId: 'oneInstanceResultsRead',
+    iteration: 2,
+    description: 'one instance read test'
+  }
+  await runTest(testConf)
+  const testConf2 = {
+    test: readDoubleStore,
+    resultId: 'twoInstancesResultsRead',
+    iteration: 2,
+    description: 'two instances read test'
+  }
+  await runTest(testConf2)
+}
 
+async function readSingleStore() {
+  await writeSingleStore(testFile)
+  let res = []
+  await singleStore.iterate((value, key, it) => {
+    res.push({
+      [key]: value.meta.lastModification
+    })
+  })
+  if (res.length !== 18083) {
+    console.log('Error on READ, the number of element is != 18083')
+  } else {
+    console.log('# of keys : ', res.length)
+  }
+}
+
+async function readDoubleStore() {
+  await writeDoubleStore(testFile)
+  let res = []
+  await app1meta.iterate((value, key, it) => {
+    res.push({
+      [key]: value.lastModification
+    })
+  })
+  console.log('# of keys : ', res.length)
 }
 
 async function runWriteTest() {
   const testConf = {
-    test: fillSingleStorage,
+    test: writeSingleStore,
     resultId: 'oneInstanceResults',
     iteration: 2,
-    description: 'one instance write test '
+    description: 'one instance write test',
+    delete: deleteSingleStore
   }
 
   const testConf2 = {
-    test: fillDoubleStorage,
+    test: writeDoubleStore,
     resultId: 'twoInstancesResults',
     iteration: 2,
-    description: 'Two instances write test '
+    description: 'Two instances write test ',
+    delete: deleteDoubleStore
   }
-  const res = await runTest(testConf)
-  console.log('fin', res)
-  const res2 = await runTest(testConf2)
-  console.log('fin2', res2)
-
-
+  await runTest(testConf)
+  await runTest(testConf2)
 }
 
 /**
@@ -119,7 +157,9 @@ async function runTest(conf) {
         t1 = performance.now()
         console.log('Call took ' + (t1 - t0) + ' milliseconds.')
         results.push(parseInt(t1) - parseInt(t0))
-        await deleteSingleStore()
+        if (conf.delete) {
+          await conf.delete()
+        }
         console.log('delete store')
         el.innerHTML = results.toString()
       } catch (error) {
@@ -136,7 +176,7 @@ async function runTest(conf) {
   })
 }
 
-const fillSingleStorage = (data) => {
+const writeSingleStore = (data) => {
   const promiseArr = []
   for (let key of Object.keys(data)) {
     promiseArr.push(singleStore.setItem(key, data[key]))
@@ -148,7 +188,7 @@ const deleteSingleStore = () => {
   return singleStore.clear()
 }
 
-const fillDoubleStorage = (data) => {
+const writeDoubleStore = (data) => {
   const promiseArr = []
   for (let key of Object.keys(data)) {
     promiseArr.push(app1.setItem(key, data[key].value))

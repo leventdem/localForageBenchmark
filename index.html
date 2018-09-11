@@ -46,19 +46,29 @@
                         <th> <button class="button" type="button" id="deleteStores">Delete all stores</button></th>
                     </tr>
                     <tr>
-                        <th> <button class="button" type="button" id="runReadTest">Run doubleStore test</button></th>
+                        <th> <button class="button" type="button" id="runReadTest">Run read tests</button></th>
                     </tr>
                     <tr>
-                        <th> <button class="button" type="button" id="deleteDoubleStore">Delete doubleStore</button></th>
+                        <th> <button class="button" type="button" id="runReadTestWithEnc">Run read tests with encryption</button></th>
                     </tr>
                 </table>
                 <h2>Results</h2>
                 <ul>
+                    Write
                     <li>
                         <div id="oneInstanceResults"></div>
                     </li>
                     <li>
                         <div id="twoInstancesResults"></div>
+                    </li>
+                </ul>
+                <ul>
+                    Read
+                    <li>
+                        <div id="oneInstanceResultsRead"></div>
+                    </li>
+                    <li>
+                        <div id="twoInstancesResultsRead"></div>
                     </li>
                 </ul>
 
