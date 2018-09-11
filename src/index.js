@@ -124,11 +124,15 @@ async function runWriteTest() {
   let keys = await singleStore.keys()
   if (keys.length !== nbOfKeys) {
     console.log(`Error : written keys # is ${keys.length} instead of ${nbOfKeys}`)
+  } else {
+    console.log(`Write succesfully ${keys.length} elements.`)
   }
   await runTest(testConf2)
   keys = await app1meta.keys()
   if (keys.length !== nbOfKeys) {
     console.log(`Error : written keys # is ${keys.length} instead of ${nbOfKeys}`)
+  } else {
+    console.log(`Write succesfully ${keys.length} elements.`)
   }
 }
 
@@ -154,10 +158,10 @@ async function runTest(conf) {
         t1 = performance.now()
         console.log('Call took ' + (t1 - t0) + ' milliseconds.')
         results.push(parseInt(t1) - parseInt(t0))
-        if (conf.delete) {
+        if (conf.delete && index !== (conf.iteration - 1)) {
           await conf.delete()
+          console.log('delete store')
         }
-        console.log('delete store')
         el.innerHTML = results.toString()
       } catch (error) {
         console.log(error)
