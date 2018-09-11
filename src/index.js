@@ -26,38 +26,19 @@ app1meta = localforage.createInstance({
   name: 'app1meta'
 })
 
-document.addEventListener('DOMContentLoaded', function() {
-  var el = null
+document.addEventListener('DOMContentLoaded', () => {
+  let el = null
   el = document.getElementById('runWriteTest')
   if (el) {
-    el.addEventListener('click', function(e) {
-      runWriteTest()
-    })
-  }
-  el = document.getElementById('deleteStores')
-  if (el) {
-    el.addEventListener('click', function(e) {
-      deleteSingleStore()
-        .then(() => deleteDoubleStore())
-    })
+    el.addEventListener('click', e => runWriteTest())
   }
   el = document.getElementById('runReadTest')
   if (el) {
-    el.addEventListener('click', function(e) {
-      runReadTest()
-    })
-  }
-  el = document.getElementById('deleteDoubleStore')
-  if (el) {
-    el.addEventListener('click', function(e) {
-      deleteDoubleStore()
-    })
+    el.addEventListener('click', e => runReadTest())
   }
   el = document.getElementById('loadData')
   if (el) {
-    el.addEventListener('click', function(e) {
-      loadData()
-    })
+    el.addEventListener('click', e => loadData())
   }
 })
 
@@ -97,7 +78,6 @@ async function runReadTest() {
   } else {
     console.log('# of keys : ', timeStamps2.length)
   }
-
 }
 
 async function readSingleStore() {
