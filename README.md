@@ -36,3 +36,5 @@ Second instance with metadata:
    npm i
    npm  start
 ```
+In the web page, load the test file and run each test separately or click on "Run all tests". 
+Results will appear directly in the page, details are shown in the console log. 
