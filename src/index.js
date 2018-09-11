@@ -120,6 +120,7 @@ async function runWriteTest() {
     description: 'Two instances write test ',
     delete: deleteDoubleStore
   }
+
   await runTest(testConf)
   let keys = await singleStore.keys()
   if (keys.length !== nbOfKeys) {
@@ -149,6 +150,7 @@ async function runTest(conf) {
     }
     const results = []
     let el = document.getElementById(conf.resultId)
+    el.innerHTML = 'wait ... results will be shown here.'
     let t0, t1
     for (let index = 0; index < conf.iteration; index++) {
       t0 = performance.now()
