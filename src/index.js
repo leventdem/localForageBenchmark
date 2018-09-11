@@ -136,7 +136,6 @@ const readSingleStore = async encryption => {
 }
 
 const readDoubleStore = async encryption => {
-  // await writeDoubleStore(encryption || false)
   let res = []
   let dec = []
   await app1meta.iterate((value, key, it) => {
@@ -145,7 +144,7 @@ const readDoubleStore = async encryption => {
     })
   })
   if (encryption) {
-    await Promise.all(res.map(async(el) => {
+    await Promise.all(res.map(async el => {
       let val = JSON.parse(await cipherAES.decrypt(Object.values(el)[0]))
       dec.push(val.lastModification)
     }))
