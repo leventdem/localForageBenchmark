@@ -15,6 +15,7 @@ let app1
 let app1meta
 let testFile = null
 let testFileLoaded = false
+let nbOfKeys = 0
 
 singleStore = localforage.createInstance({
   name: 'singleStore'
@@ -48,7 +49,8 @@ const loadData = () => {
     .then(data => {
       testFile = data
       testFileLoaded = true
-      console.log('File loaded')
+      nbOfKeys = Object.keys(testFile).length
+      console.log('File loaded, # of keys : ', nbOfKeys)
     })
     .catch((err) => console.log(err))
 }
@@ -61,8 +63,8 @@ async function runReadTest() {
     description: 'one instance read test'
   }
   const timeStamps = await runTest(testConf)
-  if (timeStamps.length !== 18083) {
-    console.log('Error on READ, the number of element is != 18083')
+  if (timeStamps.length !== nbOfKeys) {
+    console.log(`Error : read keys # is ${timeStamps.length} instead of ${nbOfKeys}`)
   } else {
     console.log('# of keys : ', timeStamps.length)
   }
@@ -73,8 +75,8 @@ async function runReadTest() {
     description: 'two instances read test'
   }
   const timeStamps2 = await runTest(testConf2)
-  if (timeStamps2.length !== 18083) {
-    console.log('Error on READ, the number of element is != 18083')
+  if (timeStamps2.length !== nbOfKeys) {
+    console.log(`Error : read keys # is ${timeStamps2.length} instead of ${nbOfKeys}`)
   } else {
     console.log('# of keys : ', timeStamps2.length)
   }
@@ -119,7 +121,15 @@ async function runWriteTest() {
     delete: deleteDoubleStore
   }
   await runTest(testConf)
+  let keys = await singleStore.keys()
+  if (keys.length !== nbOfKeys) {
+    console.log(`Error : written keys # is ${keys.length} instead of ${nbOfKeys}`)
+  }
   await runTest(testConf2)
+  keys = await app1meta.keys()
+  if (keys.length !== nbOfKeys) {
+    console.log(`Error : written keys # is ${keys.length} instead of ${nbOfKeys}`)
+  }
 }
 
 /**
