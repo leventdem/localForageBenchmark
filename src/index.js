@@ -208,36 +208,3 @@ async function deleteDoubleStore() {
   await app1.clear()
   await app1meta.clear()
 }
-
-// Setting the key on one of these doesn't affect the other.
-// let res = {}
-// store.setItem('name', 'bob')
-//   .then(() => store.setItem('age', '40'))
-//   .then(() => {
-//     return iter()
-//   })
-//   // .then(() => store.iterate((value, key, it) => {
-//   //   // console.log([key, value])
-//   //   res[key] = value
-//   // }))
-//   .then((r) => {
-//     console.log('iteration is complete')
-//     console.log(r)
-//   })
-// otherStore.setItem('name', 'alice').then(() => console.log('done'))
-
-// function iter () {
-//   let res = {}
-//   return store.iterate((value, key, it) => {
-//     res[key] = value
-//   }).then(() => {
-//     return res
-//   })
-// }
-// async function iter () {
-//   let res = {}
-//   await store.iterate((value, key, it) => {
-//     res[key] = value
-//   })
-//   return res
-// }
