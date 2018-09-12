@@ -17,6 +17,7 @@ let app1meta
 let testFile = null
 let testFileLoaded = false
 let nbOfKeys = 0
+const nbOfIterations = 6
 const AESKey = Uint8Array.from([126, 252, 235, 252, 60, 233, 252, 81, 130, 147, 61, 241, 179, 85, 95, 23])
 const cipherAES = new MasqCrypto.AES({
   mode: MasqCrypto.aesModes.GCM,
@@ -84,7 +85,7 @@ async function runReadTest(encryption) {
   const testConf = {
     test: readSingleStore,
     resultId: `oneInstanceResultsRead${encryption ? 'WithEnc' : ''}`,
-    iteration: 2,
+    iteration: nbOfIterations,
     description: `one instance read test ${encryption ? 'WithEnc' : ''}`,
     encryption: encryption || false
   }
@@ -98,7 +99,7 @@ async function runReadTest(encryption) {
   const testConf2 = {
     test: readDoubleStore,
     resultId: `twoInstancesResultsRead${encryption ? 'WithEnc' : ''}`,
-    iteration: 2,
+    iteration: nbOfIterations,
     description: `two instances read test ${encryption ? 'WithEnc' : ''}`,
     encryption: encryption || false
   }
@@ -127,7 +128,7 @@ const readSingleStore = async encryption => {
      */
 
   if (encryption) {
-    await Promise.all(res.map(async(el) => {
+    await Promise.all(res.map(async el => {
       let val = JSON.parse(await cipherAES.decrypt(Object.values(el)[0]))
       dec.push(val.meta.lastModification)
     }))
@@ -158,7 +159,7 @@ const runWriteTest = async encryption => {
   const testConf = {
     test: writeSingleStore,
     resultId: `oneInstanceResultsWrite${encryption ? 'WithEnc' : ''}`,
-    iteration: 2,
+    iteration: nbOfIterations,
     description: `one instance write test ${encryption ? 'WithEnc' : ''}`,
     delete: deleteSingleStore,
     encryption: encryption || false
@@ -167,7 +168,7 @@ const runWriteTest = async encryption => {
   const testConf2 = {
     test: writeDoubleStore,
     resultId: `twoInstancesResultsWrite${encryption ? 'WithEnc' : ''}`,
-    iteration: 2,
+    iteration: nbOfIterations,
     description: `Two instances write test ${encryption ? 'WithEnc' : ''}`,
     delete: deleteDoubleStore,
     encryption: encryption || false
