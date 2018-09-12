@@ -7,7 +7,7 @@ Our constraints are :
 - storing two objects : one for content and one for metadata
 - both objects must be encrypted separately
 
-Our benchamrk goal is to measure the time to retrieve only the meta data by testing to data architecture. 
+Our benchamrk goal is to measure the time to retrieve only the meta data by testing two data storing models. 
 
 ## Two solutions 
 
