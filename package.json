@@ -14,11 +14,13 @@
   "license": "ISC",
   "dependencies": {
     "fetch": "^1.1.0",
-    "masq-common": "git+https://github.com/QwantResearch/masq-common.git",
-    "masq-crypto": "git+https://github.com/QwantResearch/masq-crypto.git",
     "fs": "0.0.1-security",
     "http-server": "^0.11.1",
-    "localforage": "^1.7.2"
+    "localforage": "^1.7.2",
+    "masq-common": "git+https://github.com/QwantResearch/masq-common.git",
+    "masq-crypto": "git+https://github.com/QwantResearch/masq-crypto.git",
+    "webpack": "^4.35.3",
+    "webpack-cli": "^3.3.5"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",

@@ -5,7 +5,7 @@ const fs = require('fs')
  * nbOfKeyValue : number of keys inside the testFile
  * e.g. 20000 => ~8MB 
  * */
-const nbOfKeyValue = 20000
+const nbOfKeyValue = 10000
 const fileName = 'random.json'
 
 const genModulo10 = () => {
