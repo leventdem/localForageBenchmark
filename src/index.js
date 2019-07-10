@@ -11,14 +11,53 @@ import MasqCrypto from 'masq-crypto'
  @property {string} description - A simple test description
  */
 
+let encryptedStr128
+let encryptedStr256
+const str = ` Sed sollicitudin, risus eget varius pulvinar, elit nisi ultricies libero, 
+  nec cursus ante quam eu libero. In aliquet nibh et arcu maximus, a dictum lacus consectetur. 
+  Integer condimentum odio at enim dictum tincidunt eget id nisl. Proin tincidunt tellus id ligula 
+  rhoncus, in imperdiet arcu hendrerit. Donec nec metus iaculis nisi viverra tincidunt non vel massa.
+  Nulla ante mi, luctus vel urna non, tempus rutrum nunc. Phasellus maximus sit amet quam quis porta.
+  Suspendisse sit amet elit pulvinar, lobortis dui at, viverra sapien. Interdum et malesuada fames ac 
+  ante ipsum primis in faucibus. Aliquam euismod odio non odio vestibulum porttitor. Aliquam et lorem ante.
+  Integer condimentum odio at enim dictum tincidunt eget id nisl. Proin tincidunt tellus id ligula 
+  rhoncus, in imperdiet arcu hendrerit. Donec nec metus iaculis nisi viverra tincidunt non vel massa.
+  Nulla ante mi, luctus vel urna non, tempus rutrum nunc. Phasellus maximus sit amet quam quis porta.
+  Suspendisse sit amet elit pulvinar, lobortis dui at, viverra sapien. Interdum et malesuada fames ac 
+  ante ipsum primis in faucibus. Aliquam euismod odio non odio vestibulum porttitor. Aliquam et lorem ante.
+  Integer condimentum odio at enim dictum tincidunt eget id nisl. Proin tincidunt tellus id ligula 
+  rhoncus, in imperdiet arcu hendrerit. Donec nec metus iaculis nisi viverra tincidunt non vel massa.
+  Nulla ante mi, luctus vel urna non, tempus rutrum nunc. Phasellus maximus sit amet quam quis porta.
+  Suspendisse sit amet elit pulvinar, lobortis dui at, viverra sapien. Interdum et malesuada fames ac 
+  ante ipsum primis in faucibus. Aliquam euismod odio non odio vestibulum porttitor. Aliquam et lorem ante.
+  Integer condimentum odio at enim dictum tincidunt eget id nisl. Proin tincidunt tellus id ligula 
+  rhoncus, in imperdiet arcu hendrerit. Donec nec metus iaculis nisi viverra tincidunt non vel massa.
+  Nulla ante mi, luctus vel urna non, tempus rutrum nunc. Phasellus maximus sit amet quam quis porta.
+  Suspendisse sit amet elit pulvinar, lobortis dui at, viverra sapien. Interdum et malesuada fames ac 
+  ante ipsum primis in faucibus. Aliquam euismod odio non odio vestibulum porttitor. Aliquam et lorem ante.
+  Integer condimentum odio at enim dictum tincidunt eget id nisl. Proin tincidunt tellus id ligula 
+  rhoncus, in imperdiet arcu hendrerit. Donec nec metus iaculis nisi viverra tincidunt non vel massa.
+  Nulla ante mi, luctus vel urna non, tempus rutrum nunc. Phasellus maximus sit amet quam quis porta.
+  Suspendisse sit amet elit pulvinar, lobortis dui at, viverra sapien. Interdum et malesuada fames ac 
+  ante ipsum primis in faucibus. Aliquam euismod odio non odio vestibulum porttitor. Aliquam et lorem ante.
+  Integer condimentum odio at enim dictum tincidunt eget id nisl. Proin tincidunt tellus id ligula 
+  rhoncus, in imperdiet arcu hendrerit. Donec nec metus iaculis nisi viverra tincidunt non vel massa.
+  Nulla ante mi, luctus vel urna non, tempus rutrum nunc. Phasellus maximus sit amet quam quis porta.
+  Suspendisse sit amet elit pulvinar, lobortis dui at, viverra sapien. Interdum et malesuada fames ac 
+  ante ipsum primis in faucibus. Aliquam euismod odio non odio vestibulum porttitor. Aliquam et lorem ante.
+  Cras blandit eget risus nec efficitur. Sed luctus placerat lorem sed convallis. Nam nec nibh nunc. `
+
 let singleStore
+let dataFile
+let dataFileEnc
 let app1
 let app1meta
 let testFile = null
 let testFileLoaded = false
 let nbOfKeys = 0
-const nbOfIterations = 6
+const nbOfIterations = 1
 const AESKey = Uint8Array.from([126, 252, 235, 252, 60, 233, 252, 81, 130, 147, 61, 241, 179, 85, 95, 23])
+const AESKey256 = Uint8Array.from([126, 252, 235, 252, 60, 233, 252, 81, 130, 147, 61, 241, 179, 85, 95, 23, 126, 252, 235, 252, 60, 233, 252, 81, 130, 147, 61, 241, 179, 85, 95, 23])
 const cipherAES = new MasqCrypto.AES({
   mode: MasqCrypto.aesModes.GCM,
   key: AESKey,
@@ -60,9 +99,20 @@ document.addEventListener('DOMContentLoaded', () => {
   if (el) {
     el.addEventListener('click', e => runAllTests())
   }
+  el = document.getElementById('runEncSpeedTest')
+  if (el) {
+    el.addEventListener('click', e => runEncryptionSpeedTest())
+  }
+  el = document.getElementById('runEncSpeedTestFile')
+  if (el) {
+    el.addEventListener('click', e => runEncryptionSpeedTestFile())
+  }
 })
 
+
+
 const loadData = () => {
+  // fetch('http://192.168.26.112:8182/res/random.json')
   fetch('http://127.0.0.1:8182/res/random.json')
     .then((response) => response.json())
     .then(data => {
@@ -74,12 +124,15 @@ const loadData = () => {
     .catch((err) => console.log(err))
 }
 
-const runAllTests = async() => {
+const runAllTests = async () => {
   await runWriteTest(false)
   await runReadTest(false)
   await runWriteTest(true)
   await runReadTest(true)
+  await runEncryptionSpeedTest(true)
 }
+
+
 
 async function runReadTest(encryption) {
   const testConf = {
@@ -116,16 +169,16 @@ const readSingleStore = async encryption => {
   let res = []
   let dec = []
   await singleStore.iterate((value, key, it) => {
-      res.push({
-        [key]: encryption ? value : value.meta.lastModification
-      })
+    res.push({
+      [key]: encryption ? value : value.meta.lastModification
     })
-    /**
-     * res contains : [
-     * {a:{ciphertext:"efef",iv:"",additionalData:""}},
-     * {b:{ciphertext:"efef",iv:"",additionalData:""}},
-     * ]
-     */
+  })
+  /**
+   * res contains : [
+   * {a:{ciphertext:"efef",iv:"",additionalData:""}},
+   * {b:{ciphertext:"efef",iv:"",additionalData:""}},
+   * ]
+   */
 
   if (encryption) {
     await Promise.all(res.map(async el => {
@@ -174,6 +227,8 @@ const runWriteTest = async encryption => {
     encryption: encryption || false
   }
 
+
+
   await runTest(testConf)
   let keys = await singleStore.keys()
   if (keys.length !== nbOfKeys) {
@@ -190,13 +245,110 @@ const runWriteTest = async encryption => {
   }
 }
 
+
+const runEncryptionSpeedTest = async () => {
+  console.log('coucou enc speed test')
+
+  const testConfEnc128 = {
+    test: encryptionSpeed128,
+    resultId: `encryptionSpeed128`,
+    description: `encryptionSpeed128`,
+    iteration: 1,
+    encryption: true
+  }
+  const testConfDec128 = {
+    test: decryptionSpeed128,
+    resultId: `decryptionSpeed128`,
+    description: `decryptionSpeed128`,
+    iteration: 1,
+    encryption: true
+  }
+  const testConfEnc256 = {
+    test: encryptionSpeed256,
+    resultId: `encryptionSpeed256`,
+    description: `encryptionSpeed256`,
+    iteration: 1,
+    encryption: true
+  }
+  const testConfDec256 = {
+    test: decryptionSpeed256,
+    resultId: `decryptionSpeed256`,
+    description: `decryptionSpeed256`,
+    iteration: 1,
+    encryption: true
+  }
+
+  // await initOperation()
+
+  await runTest(testConfEnc128)
+  await runTest(testConfDec128)
+
+  await runTest(testConfEnc256)
+  await runTest(testConfDec256)
+
+
+
+
+}
+
+
+const runEncryptionSpeedTestFile = async () => {
+
+  const data = await getFile()
+  dataFile = JSON.stringify(data)
+  
+  
+
+  const testConfEnc128 = {
+    test: encryptionSpeedFile128,
+    resultId: `encryptionSpeedFile128`,
+    description: `encryptionSpeedFile128`,
+    iteration: 1,
+    encryption: true
+  }
+  // const testConfDec128 = {
+  //   test: decryptionSpeedFile128,
+  //   resultId: `decryptionSpeedFile128`,
+  //   description: `decryptionSpeedFile128`,
+  //   iteration: 1,
+  //   encryption: true
+  // }
+  const testConfEnc256 = {
+    test: encryptionSpeedFile256,
+    resultId: `encryptionSpeedFile256`,
+    description: `encryptionSpeedFile256`,
+    iteration: 1,
+    encryption: true
+  }
+  // const testConfDec256 = {
+  //   test: decryptionSpeedFile256,
+  //   resultId: `decryptionSpeedFile256`,
+  //   description: `decryptionSpeedFile256`,
+  //   iteration: 1,
+  //   encryption: true
+  // }
+
+  // await initOperation()
+
+  await runTest(testConfEnc128)
+  // await runTest(testConfDec128)
+
+  await runTest(testConfEnc256)
+  // await runTest(testConfDec256)
+
+
+
+
+}
+
+
 /**
  * Run a single test, and return the mean excution time.
  * @param {testConfiguration} conf - The test confuguration
  * @returns {int} - The mean execution time of the test
  */
 async function runTest(conf) {
-  return new Promise(async(resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     let res = {}
     console.log(`start...${conf.description}`)
     if (!testFileLoaded) {
@@ -259,3 +411,125 @@ async function deleteDoubleStore() {
   await app1.clear()
   await app1meta.clear()
 }
+
+const getFile = () => {
+  return new Promise((resolve, reject) => {
+    fetch('http://127.0.0.1:8182/res/random.json')
+      .then((response) => response.json())
+      .then(data => {
+        resolve(data)
+      })
+  })
+}
+
+
+
+
+
+const encryptionSpeed128 = async () => {
+  const cipherAES_128 = new MasqCrypto.AES({
+    mode: MasqCrypto.aesModes.GCM,
+    key: AESKey,
+    keySize: 128
+  })
+  console.log(cipherAES_128)
+  for (let i = 0; i < 9999; i++) {
+    await cipherAES_128.encrypt(str)
+  }
+  encryptedStr128 = await cipherAES_128.encrypt(str)
+  const dec = await cipherAES_128.decrypt(encryptedStr128)
+  if (dec !== str) console.error('decryption fail')
+
+}
+
+const decryptionSpeed128 = async () => {
+  const cipherAES_128 = new MasqCrypto.AES({
+    mode: MasqCrypto.aesModes.GCM,
+    key: AESKey,
+    keySize: 128
+  })
+  console.log(cipherAES_128)
+  for (let i = 0; i < 9999; i++) {
+    await cipherAES_128.decrypt(encryptedStr128)
+  }
+  const dec = await cipherAES_128.decrypt(encryptedStr128)
+  if (dec !== str) console.error('decryption fail')
+
+}
+
+const encryptionSpeed256 = async () => {
+  const cipherAES_256 = new MasqCrypto.AES({
+    mode: MasqCrypto.aesModes.GCM,
+    key: AESKey256,
+    keySize: 256
+  })
+  console.log(cipherAES_256)
+  for (let i = 0; i < 9999; i++) {
+    await cipherAES_256.encrypt(str)
+  }
+  encryptedStr256 = await cipherAES_256.encrypt(str)
+  const dec = await cipherAES_256.decrypt(encryptedStr256)
+  if (dec !== str) console.error('decryption fail')
+}
+
+const decryptionSpeed256 = async () => {
+  const cipherAES_256 = new MasqCrypto.AES({
+    mode: MasqCrypto.aesModes.GCM,
+    key: AESKey256,
+    keySize: 256
+  })
+  console.log(cipherAES_256)
+  for (let i = 0; i < 9999; i++) {
+    await cipherAES_256.decrypt(encryptedStr256)
+  }
+  const dec = await cipherAES_256.decrypt(encryptedStr256)
+  if (dec !== str) console.error('decryption fail')
+
+}
+
+
+const encryptionSpeedFile128 = async () => {
+  const cipherAES_128 = new MasqCrypto.AES({
+    mode: MasqCrypto.aesModes.GCM,
+    key: AESKey,
+    keySize: 128
+  })
+  for (let i = 0; i < 2; i++) {
+    await cipherAES_128.encrypt(dataFile)
+  }
+  dataFileEnc = await cipherAES_128.encrypt(dataFile)  
+}
+
+const encryptionSpeedFile256 = async () => {
+  const cipherAES_256 = new MasqCrypto.AES({
+    mode: MasqCrypto.aesModes.GCM,
+    key: AESKey,
+    keySize: 256
+  })
+  for (let i = 0; i < 2; i++) {
+    await cipherAES_256.encrypt(dataFile)
+  }
+  dataFileEnc = await cipherAES_256.encrypt(dataFile)
+
+}
+
+
+// decryption cause an error, must use masq-common crypto instead of masq-crypto lib
+// in decryptBuffer, we use a specific toString, we must use the data.toString() method instead
+const decryptionSpeedFile128 = async () => {
+  const cipherAES_128 = new MasqCrypto.AES({
+    mode: MasqCrypto.aesModes.GCM,
+    key: AESKey,
+    keySize: 128
+  })
+  for (let i = 0; i < 2; i++) {
+    console.log('step ',i)
+    
+    await cipherAES_128.decrypt(dataFileEnc)
+  }
+  const dec = await cipherAES_128.decrypt(dataFileEnc)
+  if (dec !== str) console.error('decryption fail')
+
+}
+
+

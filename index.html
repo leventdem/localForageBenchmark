@@ -51,6 +51,12 @@
                         <th> <button class="button" type="button" id="runReadTestWithEnc">Run read tests (with dec.)</button></th>
 
                     </tr>
+                      <tr>
+                        <th> <button class="button" type="button" id="runEncSpeedTest">Run enc/dec speed test</button></th>
+                        <th> <button class="button" type="button" id="runEncSpeedTestFile">Run enc/dec speed test (file)</button></th>
+                        
+
+                    </tr>
                 </table>
                 <h2>Results</h2>
                 <ul>
@@ -88,6 +94,42 @@
                     <li>
                         <div id="twoInstancesResultsReadWithEnc"></div>
                     </li>
+                </ul>
+                <ul>
+                    enc/dec speed test 128
+                    <li>
+                        <div id="encryptionSpeed128"></div>
+                    </li> <li>
+                        <div id="decryptionSpeed128"></div>
+                    </li>
+                   
+                </ul>
+                <ul>
+                    enc/dec speed test 256
+                    <li>
+                        <div id="encryptionSpeed256"></div>
+                    </li> <li>
+                        <div id="decryptionSpeed256"></div>
+                    </li>
+                   
+                </ul>
+                <ul>
+                    enc/dec speed test 128 (file)
+                    <li>
+                        <div id="encryptionSpeedFile128"></div>
+                    </li> <li>
+                        <div id="decryptionSpeedFile128"></div>
+                    </li>
+                   
+                </ul>
+                <ul>
+                    enc/dec speed test 256 (file)
+                    <li>
+                        <div id="encryptionSpeedFile256"></div>
+                    </li> <li>
+                        <div id="decryptionSpeedFile256"></div>
+                    </li>
+                   
                 </ul>
                 <!-- <p>The read operation with one instance requires one setItem and one entire ooperation instead of 2. </p> -->
         </article>
